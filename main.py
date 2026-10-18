@@ -1,0 +1,99 @@
+"""FastAPI request and response handling."""
+
+from typing import Annotated, Any
+
+from fastapi import FastAPI, HTTPException, Query
+
+import service
+from models import (
+    CareQueueItem,
+    InterventionResponse,
+    InterventionUpdate,
+    ManagementDashboard,
+    OperationsSummary,
+    PatientEncounter,
+    ReadmissionAnalysis,
+    RiskLevel,
+)
+
+app = FastAPI(
+    title="Diabetes Readmission Care-Management MVP",
+    description=(
+        "An explainable operational prioritization queue for historical diabetes "
+        "encounters. Risk scores do not use the historical readmission outcome."
+    ),
+    version="1.0.0",
+)
+
+PageLimit = Annotated[int, Query(ge=1, le=1000)]
+PageOffset = Annotated[int, Query(ge=0)]
+
+
+@app.get("/encounters", response_model=list[PatientEncounter])
+def list_encounters(
+    limit: PageLimit = 100,
+    offset: PageOffset = 0,
+    risk_level: RiskLevel | None = None,
+) -> list[dict[str, Any]]:
+    return service.list_encounters(limit, offset, risk_level)
+
+
+@app.get("/encounters/{encounter_id}", response_model=PatientEncounter)
+def get_encounter(encounter_id: int) -> dict[str, Any]:
+    encounter = service.get_encounter(encounter_id)
+    if encounter is None:
+        raise HTTPException(status_code=404, detail="Encounter not found")
+    return encounter
+
+
+@app.get("/care-queue", response_model=list[CareQueueItem])
+def get_care_queue(
+    limit: PageLimit = 100, offset: PageOffset = 0
+) -> list[dict[str, Any]]:
+    return service.get_care_queue(limit, offset)
+
+
+@app.get("/care-queue/high", response_model=list[CareQueueItem])
+def get_high_risk_queue(
+    limit: PageLimit = 100, offset: PageOffset = 0
+) -> list[dict[str, Any]]:
+    return service.get_care_queue(limit, offset, high_only=True)
+
+
+@app.patch(
+    "/interventions/{encounter_id}", response_model=InterventionResponse
+)
+def update_intervention(
+    encounter_id: int, update: InterventionUpdate
+) -> dict[str, Any]:
+    changes = update.model_dump(exclude_unset=True)
+    if not changes:
+        raise HTTPException(
+            status_code=422, detail="At least one intervention field is required"
+        )
+    try:
+        intervention = service.update_intervention(encounter_id, changes)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    if intervention is None:
+        raise HTTPException(
+            status_code=404, detail="Care-queue intervention not found"
+        )
+    return intervention
+
+
+@app.get("/operations/summary", response_model=OperationsSummary)
+def get_operations_summary() -> OperationsSummary:
+    return service.get_operations_summary()
+
+
+@app.get(
+    "/operations/readmission-analysis", response_model=ReadmissionAnalysis
+)
+def get_readmission_analysis() -> ReadmissionAnalysis:
+    return service.get_readmission_analysis()
+
+
+@app.get("/management/dashboard", response_model=ManagementDashboard)
+def get_management_dashboard() -> ManagementDashboard:
+    return service.get_management_dashboard()
