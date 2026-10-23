@@ -4,6 +4,7 @@ from typing import Any
 
 import repository
 from models import (
+    EncounterCreate,
     ManagementDashboard,
     OperationsSummary,
     ReadmissionAnalysis,
@@ -42,6 +43,19 @@ def list_encounters(
 
 def get_encounter(encounter_id: int) -> dict[str, Any] | None:
     return repository.get_encounter(encounter_id)
+
+
+def insert_encounter(encounter: EncounterCreate) -> dict[str, Any] | None:
+    """Calculate operational risk and persist a new encounter."""
+    row = encounter.model_dump()
+    row["risk_score"], row["risk_level"] = calculate_risk(
+        number_inpatient=row["number_inpatient"],
+        number_emergency=row["number_emergency"],
+        number_outpatient=row["number_outpatient"],
+        time_in_hospital=row["time_in_hospital"],
+        num_medications=row["num_medications"],
+    )
+    return repository.insert_encounter(row)
 
 
 def get_care_queue(

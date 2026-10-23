@@ -52,6 +52,22 @@ ENCOUNTER_UPSERT = """
         risk_level = EXCLUDED.risk_level
 """
 
+ENCOUNTER_INSERT = """
+    INSERT INTO patient_encounters (
+        encounter_id, patient_nbr, age, time_in_hospital, number_inpatient,
+        number_emergency, number_outpatient, num_medications,
+        num_lab_procedures, discharge_disposition_id, admission_type_id,
+        readmitted, risk_score, risk_level
+    ) VALUES (
+        %(encounter_id)s, %(patient_nbr)s, %(age)s, %(time_in_hospital)s,
+        %(number_inpatient)s, %(number_emergency)s, %(number_outpatient)s,
+        %(num_medications)s, %(num_lab_procedures)s, %(discharge_disposition_id)s,
+        %(admission_type_id)s, %(readmitted)s, %(risk_score)s, %(risk_level)s
+    )
+    ON CONFLICT (encounter_id) DO NOTHING
+    RETURNING *
+"""
+
 CARE_QUEUE_SELECT = """
     SELECT pe.*, ci.status AS intervention_status, ci.assigned_to, ci.notes,
            ci.created_at, ci.updated_at
@@ -93,6 +109,24 @@ def load_encounters(rows: Iterable[dict[str, Any]]) -> int:
                     )
                 loaded += len(batch)
     return loaded
+
+
+def insert_encounter(row: dict[str, Any]) -> dict[str, Any] | None:
+    """Insert one encounter and initialize its intervention when prioritized."""
+    values = _encounter_values(row)
+    with connect() as connection:
+        encounter = connection.execute(ENCOUNTER_INSERT, values).fetchone()
+        if encounter is None:
+            return None
+        if values["risk_level"] in (RiskLevel.MEDIUM.value, RiskLevel.HIGH.value):
+            connection.execute(
+                """
+                INSERT INTO care_interventions (encounter_id, status)
+                VALUES (%s, 'PENDING_REVIEW')
+                """,
+                (values["encounter_id"],),
+            )
+        return encounter
 
 
 def list_encounters(

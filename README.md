@@ -60,6 +60,7 @@ Scores map to LOW (0-2), MEDIUM (3-4), and HIGH (5+). The care queue contains ME
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
+| POST | `/encounters` | Create an encounter; risk is calculated by the API |
 | GET | `/encounters?limit=100&offset=0` | Paginated encounters |
 | GET | `/encounters/{encounter_id}` | One encounter |
 | GET | `/care-queue?limit=100&offset=0` | MEDIUM/HIGH queue, highest score first |
@@ -70,6 +71,27 @@ Scores map to LOW (0-2), MEDIUM (3-4), and HIGH (5+). The care queue contains ME
 | GET | `/management/dashboard` | Operational summary with historical prioritization metrics |
 
 Workflow statuses are `PENDING_REVIEW`, `ASSIGNED`, `CONTACTED`, `FOLLOW_UP_SCHEDULED`, and `CLOSED`. The PATCH request may change any subset of `status`, `assigned_to`, and `notes`. Set owner or notes to `null` to clear them. Only encounters with a care-queue intervention can be updated.
+
+The POST request accepts the encounter source fields (without `risk_score` or `risk_level`), for example:
+
+```json
+{
+  "encounter_id": 2278392,
+  "patient_nbr": 8222157,
+  "age": "[0-10)",
+  "time_in_hospital": 1,
+  "number_inpatient": 0,
+  "number_emergency": 0,
+  "number_outpatient": 0,
+  "num_medications": 1,
+  "num_lab_procedures": 41,
+  "discharge_disposition_id": 25,
+  "admission_type_id": 6,
+  "readmitted": "NO"
+}
+```
+
+It returns the created encounter with its computed risk fields and HTTP 201. A repeated `encounter_id` returns HTTP 409. Medium- and high-risk encounters also receive a `PENDING_REVIEW` care intervention.
 
 Example:
 

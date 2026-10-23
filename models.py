@@ -39,6 +39,25 @@ class PatientEncounter(BaseModel):
     risk_level: RiskLevel
 
 
+class EncounterCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    encounter_id: int = Field(ge=0, le=9_223_372_036_854_775_807)
+    patient_nbr: int = Field(ge=0, le=9_223_372_036_854_775_807)
+    age: str = Field(min_length=1, max_length=16)
+    time_in_hospital: int = Field(ge=0, le=32_767)
+    number_inpatient: int = Field(ge=0, le=2_147_483_647)
+    number_emergency: int = Field(ge=0, le=2_147_483_647)
+    number_outpatient: int = Field(ge=0, le=2_147_483_647)
+    num_medications: int = Field(ge=0, le=2_147_483_647)
+    num_lab_procedures: int = Field(ge=0, le=2_147_483_647)
+    discharge_disposition_id: int = Field(
+        ge=-2_147_483_648, le=2_147_483_647
+    )
+    admission_type_id: int = Field(ge=-2_147_483_648, le=2_147_483_647)
+    readmitted: str = Field(min_length=1, max_length=8)
+
+
 class CareQueueItem(PatientEncounter):
     intervention_status: InterventionStatus | None = None
     assigned_to: str | None = None

@@ -3,10 +3,12 @@
 from typing import Annotated, Any
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 import service
 from models import (
     CareQueueItem,
+    EncounterCreate,
     InterventionResponse,
     InterventionUpdate,
     ManagementDashboard,
@@ -23,6 +25,13 @@ app = FastAPI(
         "encounters. Risk scores do not use the historical readmission outcome."
     ),
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 PageLimit = Annotated[int, Query(ge=1, le=1000)]
@@ -44,6 +53,16 @@ def get_encounter(encounter_id: int) -> dict[str, Any]:
     if encounter is None:
         raise HTTPException(status_code=404, detail="Encounter not found")
     return encounter
+
+
+@app.post("/encounters", response_model=PatientEncounter, status_code=201)
+def create_encounter(encounter: EncounterCreate) -> dict[str, Any]:
+    created = service.insert_encounter(encounter)
+    if created is None:
+        raise HTTPException(
+            status_code=409, detail="Encounter ID already exists"
+        )
+    return created
 
 
 @app.get("/care-queue", response_model=list[CareQueueItem])
