@@ -58,6 +58,21 @@ class EncounterCreate(BaseModel):
     readmitted: str = Field(min_length=1, max_length=8)
 
 
+class PatientSearchFilters(BaseModel):
+    patient_id: int | None = Field(
+        default=None, ge=0, le=9_223_372_036_854_775_807
+    )
+    risk_score: int | None = Field(default=None, ge=0, le=8)
+    risk_level: RiskLevel | None = None
+
+    @property
+    def has_criteria(self) -> bool:
+        return any(
+            value is not None
+            for value in (self.patient_id, self.risk_score, self.risk_level)
+        )
+
+
 class CareQueueItem(PatientEncounter):
     intervention_status: InterventionStatus | None = None
     assigned_to: str | None = None

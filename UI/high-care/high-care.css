@@ -1,0 +1,170 @@
+.care-page {
+  max-width: 1060px;
+}
+
+.care-card {
+  padding: 27px 30px 23px;
+}
+
+.intervention-form {
+  margin-top: 24px;
+}
+
+.care-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px 24px;
+}
+
+.care-notes {
+  grid-column: 1 / -1;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid #cdd9e5;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #203a53;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.field textarea::placeholder {
+  color: #9aaaba;
+}
+
+.field textarea:focus {
+  border-color: #3288c9;
+  box-shadow: 0 0 0 3px rgb(50 136 201 / 15%);
+}
+
+.field input[readonly] {
+  background: #f5f8fb;
+  color: #526a80;
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 19px;
+}
+
+.form-message {
+  margin: 0;
+  color: #718298;
+  font-size: 12px;
+}
+
+.form-message[data-state="success"] {
+  color: #217346;
+}
+
+.form-message[data-state="error"] {
+  color: #b42318;
+}
+
+.update-button {
+  min-width: 200px;
+}
+
+.care-list-card {
+  margin-top: 20px;
+}
+
+.encounter-link {
+  display: inline;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #176da8;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.encounter-link:hover {
+  color: #104e79;
+}
+
+.encounter-link:focus-visible {
+  border-radius: 2px;
+  outline: 3px solid rgb(50 136 201 / 35%);
+  outline-offset: 3px;
+}
+
+.queue-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 13px 18px;
+  border-top: 1px solid #edf1f5;
+  color: #64798c;
+  font-size: 12px;
+}
+
+.page-button {
+  padding: 7px 11px;
+  border: 1px solid #cdd9e5;
+  border-radius: 5px;
+  background: #fff;
+  color: #31536f;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+}
+
+.page-button:hover:not(:disabled) {
+  border-color: #3288c9;
+  color: #176da8;
+}
+
+.page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.is-selected {
+  background: #eef7fd;
+}
+
+.intervention-status {
+  color: #405a70;
+  font-weight: 650;
+}
+
+@media (max-width: 600px) {
+  .care-card {
+    padding: 22px 18px;
+  }
+
+  .care-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .care-notes {
+    grid-column: auto;
+  }
+
+  .form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .update-button {
+    width: 100%;
+  }
+}

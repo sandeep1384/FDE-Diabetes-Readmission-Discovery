@@ -4,8 +4,10 @@ from collections.abc import Iterable
 from itertools import islice
 from typing import Any
 
+from psycopg import sql
+
 from database import connect
-from models import RiskLevel
+from models import PatientSearchFilters, RiskLevel
 
 ENCOUNTER_COLUMNS = (
     "encounter_id",
@@ -23,6 +25,12 @@ ENCOUNTER_COLUMNS = (
     "risk_score",
     "risk_level",
 )
+
+PATIENT_SEARCH_COLUMNS = {
+    "patient_id": "patient_nbr",
+    "risk_score": "risk_score",
+    "risk_level": "risk_level",
+}
 
 ENCOUNTER_UPSERT = """
     INSERT INTO patient_encounters (
@@ -149,6 +157,31 @@ def get_encounter(encounter_id: int) -> dict[str, Any] | None:
             "SELECT * FROM patient_encounters WHERE encounter_id = %s",
             (encounter_id,),
         ).fetchone()
+
+
+def search_patients(
+    filters: PatientSearchFilters, limit: int, offset: int
+) -> list[dict[str, Any]]:
+    conditions: list[sql.Composable] = []
+    parameters: list[Any] = []
+    for field, column in PATIENT_SEARCH_COLUMNS.items():
+        value = getattr(filters, field)
+        if value is not None:
+            conditions.append(
+                sql.SQL("{} = %s").format(sql.Identifier(column))
+            )
+            parameters.append(value.value if field == "risk_level" else value)
+    if not conditions:
+        raise ValueError(
+            "At least one of patient_id, risk_score, or risk_level is required"
+        )
+    query = sql.SQL(
+        "SELECT * FROM patient_encounters WHERE {} "
+        "ORDER BY patient_nbr, encounter_id LIMIT %s OFFSET %s"
+    ).format(sql.SQL(" AND ").join(conditions))
+    parameters.extend((limit, offset))
+    with connect() as connection:
+        return list(connection.execute(query, parameters).fetchall())
 
 
 def list_care_queue(

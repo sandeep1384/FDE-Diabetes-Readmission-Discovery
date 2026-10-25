@@ -7,6 +7,7 @@ from models import (
     EncounterCreate,
     ManagementDashboard,
     OperationsSummary,
+    PatientSearchFilters,
     ReadmissionAnalysis,
     RiskGroupAnalysis,
     RiskLevel,
@@ -43,6 +44,16 @@ def list_encounters(
 
 def get_encounter(encounter_id: int) -> dict[str, Any] | None:
     return repository.get_encounter(encounter_id)
+
+
+def search_patients(
+    filters: PatientSearchFilters, limit: int, offset: int
+) -> list[dict[str, Any]]:
+    if not filters.has_criteria:
+        raise ValueError(
+            "At least one of patient_id, risk_score, or risk_level is required"
+        )
+    return repository.search_patients(filters, limit, offset)
 
 
 def insert_encounter(encounter: EncounterCreate) -> dict[str, Any] | None:

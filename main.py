@@ -13,6 +13,7 @@ from models import (
     InterventionUpdate,
     ManagementDashboard,
     OperationsSummary,
+    PatientSearchFilters,
     PatientEncounter,
     ReadmissionAnalysis,
     RiskLevel,
@@ -53,6 +54,27 @@ def get_encounter(encounter_id: int) -> dict[str, Any]:
     if encounter is None:
         raise HTTPException(status_code=404, detail="Encounter not found")
     return encounter
+
+
+@app.get("/patients/search", response_model=list[PatientEncounter])
+def search_patients(
+    patient_id: Annotated[
+        int | None, Query(ge=0, le=9_223_372_036_854_775_807)
+    ] = None,
+    risk_score: Annotated[int | None, Query(ge=0, le=8)] = None,
+    risk_level: RiskLevel | None = None,
+    limit: PageLimit = 100,
+    offset: PageOffset = 0,
+) -> list[dict[str, Any]]:
+    filters = PatientSearchFilters(
+        patient_id=patient_id, risk_score=risk_score, risk_level=risk_level
+    )
+    if not filters.has_criteria:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one of patient_id, risk_score, or risk_level is required",
+        )
+    return service.search_patients(filters, limit, offset)
 
 
 @app.post("/encounters", response_model=PatientEncounter, status_code=201)

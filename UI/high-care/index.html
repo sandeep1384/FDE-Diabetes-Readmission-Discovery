@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Review high-risk patient encounters and update their care interventions."
+    />
+    <title>High-risk Care | Diabetes Patient Management</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="./high-care.css" />
+    <script defer src="../dist/high-care/updateHighRiskCare.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../index.html">Diabetes Patient Management</a>
+      <nav class="topbar-nav" aria-label="Main navigation">
+        <a class="nav-link" href="../index.html">Patient search</a>
+        <a class="nav-link" href="./index.html" aria-current="page">High-risk care</a>
+      </nav>
+    </header>
+
+    <main class="page care-page">
+      <section class="search-card care-card" aria-labelledby="page-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CARE MANAGEMENT</p>
+            <h1 id="page-title">High-risk patients</h1>
+            <p class="intro">
+              Update the selected encounter’s status, assignee, and notes.
+            </p>
+          </div>
+          <span class="heading-icon" aria-hidden="true">+</span>
+        </div>
+
+        <form id="intervention-form" class="intervention-form">
+          <div class="care-fields">
+            <label class="field" for="encounter-id">
+              <span>Encounter ID (selected)</span>
+              <input
+                id="encounter-id"
+                name="encounter_id"
+                type="number"
+                min="0"
+                step="1"
+                required
+                readonly
+              />
+            </label>
+
+            <label class="field" for="patient-number">
+              <span>Patient number (read-only)</span>
+              <input
+                id="patient-number"
+                name="patient_nbr"
+                type="number"
+                readonly
+              />
+            </label>
+
+            <label class="field" for="intervention-status">
+              <span>Intervention status (editable)</span>
+              <select
+                id="intervention-status"
+                name="status"
+                required
+                disabled
+              >
+                <option value="PENDING_REVIEW">Pending review</option>
+                <option value="ASSIGNED">Assigned</option>
+                <option value="CONTACTED">Contacted</option>
+                <option value="FOLLOW_UP_SCHEDULED">Follow-up scheduled</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </label>
+
+            <label class="field" for="assigned-to">
+              <span>Assigned to (editable)</span>
+              <input
+                id="assigned-to"
+                name="assigned_to"
+                type="text"
+                maxlength="200"
+                placeholder="Care team member"
+                disabled
+              />
+            </label>
+
+            <label class="field care-notes" for="care-notes">
+              <span>Notes (editable)</span>
+              <textarea
+                id="care-notes"
+                name="notes"
+                rows="3"
+                maxlength="2000"
+                placeholder="Add intervention notes"
+                disabled
+              ></textarea>
+            </label>
+          </div>
+
+          <div class="form-footer">
+            <p id="form-message" class="form-message" role="status">
+              Select an encounter below to review its intervention.
+            </p>
+            <button
+              id="update-button"
+              class="search-button update-button"
+              type="submit"
+              disabled
+            >
+              <span>Update intervention</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="results-card care-list-card" aria-labelledby="list-title">
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">PRIORITIZED QUEUE</p>
+            <h2 id="list-title">High-risk care interventions</h2>
+          </div>
+          <span id="queue-count" class="result-count" aria-live="polite"></span>
+        </div>
+
+        <div id="queue-message" class="status-message" role="status">
+          Loading high-risk encounters…
+        </div>
+
+        <div id="queue-region" class="table-scroll" hidden>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Encounter ID</th>
+                <th scope="col">Patient number</th>
+                <th scope="col">Risk score</th>
+                <th scope="col">Status</th>
+                <th scope="col">Assigned to</th>
+                <th scope="col">Notes</th>
+                <th scope="col">Last updated</th>
+              </tr>
+            </thead>
+            <tbody id="queue-body"></tbody>
+          </table>
+        </div>
+        <div id="queue-pagination" class="queue-pagination" hidden>
+          <button id="previous-page" class="page-button" type="button">
+            Previous
+          </button>
+          <span id="page-label" aria-live="polite"></span>
+          <button id="next-page" class="page-button" type="button">
+            Next
+          </button>
+        </div>
+      </section>
+
+      <p class="page-note">
+        Risk scores support operational prioritization and are not clinical
+        recommendations.
+      </p>
+    </main>
+  </body>
+</html>

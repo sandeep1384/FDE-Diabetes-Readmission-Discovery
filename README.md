@@ -63,6 +63,7 @@ Scores map to LOW (0-2), MEDIUM (3-4), and HIGH (5+). The care queue contains ME
 | POST | `/encounters` | Create an encounter; risk is calculated by the API |
 | GET | `/encounters?limit=100&offset=0` | Paginated encounters |
 | GET | `/encounters/{encounter_id}` | One encounter |
+| GET | `/patients/search?patient_id=8222157&risk_score=3&risk_level=MEDIUM` | Search encounters by patient ID, risk score, and/or risk level |
 | GET | `/care-queue?limit=100&offset=0` | MEDIUM/HIGH queue, highest score first |
 | GET | `/care-queue/high?limit=100&offset=0` | HIGH-only queue |
 | PATCH | `/interventions/{encounter_id}` | Update status, owner, and/or notes |
@@ -104,6 +105,22 @@ Example:
 ```
 
 The readmission analysis reports counts, rates as percentages, and queue capture rate. Its historical metrics are retrospective and must not be interpreted as prospective model performance or clinical guidance.
+
+Patient search accepts one or more of `patient_id`, `risk_score`, and `risk_level`. Filters supplied together are combined with AND; `patient_id` matches the dataset's `patient_nbr` and may return multiple encounters. Results are paginated with `limit` (1-1000, default 100) and `offset` (default 0). At least one search filter is required.
+
+The TypeScript API client is in `UI/patientSearch.ts`. Import `searchPatients` and pass at least one filter:
+
+```typescript
+import { searchPatients } from "./UI/patientSearch";
+
+const encounters = await searchPatients({
+  patient_id: 8222157,
+  risk_level: "MEDIUM",
+  limit: 50,
+});
+```
+
+The client defaults to `http://127.0.0.1:8000`; set `baseUrl` to use a different API host. Start the API with `uvicorn main:app --reload` before calling it.
 
 ## Data and table setup
 
